@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest // MockMvc Bean 주입
 class PostControllerTest {
@@ -26,12 +25,11 @@ class PostControllerTest {
         // expected
         mockMvc.perform(post("/posts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("title", "글 제목")
-                        .param("content", "글 내용")
+                        .content("{\"title\": \"제목입니다.\", \"content\": \"내용입니다.\"}")
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string("Hello World"))
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(content().string("{}"))
+                .andDo(print());
     }
 
     @Test
@@ -42,11 +40,13 @@ class PostControllerTest {
         // expected
         mockMvc.perform(post("/posts")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"title\": \"\", \"content\": \"내용입니다.\"}")
+                        .content("{\"title\": null, \"content\": \"내용입니다.\"}")
                 )
-                .andExpect(status().isOk())
-                .andExpect(content().string("Hello World"))
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("400")) // json data validation
+                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
+                .andDo(print());
     }
 
 }
