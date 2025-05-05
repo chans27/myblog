@@ -10,12 +10,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.data.domain.Sort.Direction.*;
 
 @SpringBootTest
 class PostServiceTest {
@@ -76,21 +80,24 @@ class PostServiceTest {
     @DisplayName("글 1page 조회")
     void test3() {
         // given
-        List<Post> requestPosts = IntStream.range(0, 30)
+        List<Post> requestPosts = IntStream.range(1, 31)
                         .mapToObj(i-> {
                             return Post.builder()
-                                    .title("blog title - " + i)
-                                    .content("blog content - " + i)
+                                    .title("blog title " + i)
+                                    .content("blog content " + i)
                                     .build();
                         })
                                 .toList();
         postRepository.saveAll(requestPosts);
 
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(DESC, "id"));
+
         // when
-        List<PostResponse> posts = postService.getList(1);
+        List<PostResponse> posts = postService.getList(pageable);
 
         // then
-        assertEquals(30L, posts.size());
+        assertEquals(5L, posts.size());
+        assertEquals("blog title 30", posts.get(0).getTitle());
+        assertEquals("blog title 26", posts.get(4).getTitle());
     }
-
 }

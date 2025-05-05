@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myblog.domain.Post;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@Transactional
 class PostControllerTest {
 
     @Autowired
@@ -30,9 +37,14 @@ class PostControllerTest {
     @Autowired
     private PostRepository postRepository;
 
+    @PersistenceContext
+    private EntityManager em;
+
+
     @BeforeEach
     void clean() {
         postRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE post AUTO_INCREMENT = 1").executeUpdate();
     }
 
     @Test
@@ -134,32 +146,24 @@ class PostControllerTest {
     @DisplayName("글 여러개 조회")
     void test5() throws Exception {
         // given
-        Post post1 = Post.builder()
-                .title("title1")
-                .content("content1")
-                .build();
-
-        postRepository.save(post1);
-
-        Post post2 = Post.builder()
-                .title("title2")
-                .content("content2")
-                .build();
-
-        postRepository.save(post2);
+        List<Post> requestPosts = IntStream.range(1, 31)
+                .mapToObj(i-> {
+                    return Post.builder()
+                            .title("blog title " + i)
+                            .content("blog content " + i)
+                            .build();
+                })
+                .toList();
+        postRepository.saveAll(requestPosts);
 
         // expected
-        mockMvc.perform(get("/posts")
+        mockMvc.perform(get("/posts?page=1&sort=id,desc")
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()", is(2)))
-                .andExpect(jsonPath("$[0].id").value(post1.getId()))
-                .andExpect(jsonPath("$[0].title").value("title1"))
-                .andExpect(jsonPath("$[0].content").value("content1"))
-                .andExpect(jsonPath("$[1].id").value(post2.getId()))
-                .andExpect(jsonPath("$[1].title").value("title2"))
-                .andExpect(jsonPath("$[1].content").value("content2"))
-
+                .andExpect(jsonPath("$.length()", is(5)))
+                .andExpect(jsonPath("$[0].id", is(30)))
+                .andExpect(jsonPath("$[0].title", is("blog title 30")))
+                .andExpect(jsonPath("$[0].content", is("blog content 30")))
                 .andDo(print());
     }
 }
