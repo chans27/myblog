@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myblog.domain.Post;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +15,20 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@Transactional
 class PostControllerTest {
 
     @Autowired
@@ -28,9 +37,14 @@ class PostControllerTest {
     @Autowired
     private PostRepository postRepository;
 
+    @PersistenceContext
+    private EntityManager em;
+
+
     @BeforeEach
     void clean() {
         postRepository.deleteAll();
+        em.createNativeQuery("ALTER TABLE post AUTO_INCREMENT = 1").executeUpdate();
     }
 
     @Test
@@ -106,4 +120,50 @@ class PostControllerTest {
         assertEquals("내용입니다.", post.getContent());
     }
 
+    @Test
+    @DisplayName("글 1개 조회")
+    void test4() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("123456789012345")
+                .content("newContent")
+                .build();
+
+        postRepository.save(post);
+
+        // expected
+        mockMvc.perform(get("/post/{postId}",post.getId())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(post.getId()))
+                .andExpect(jsonPath("$.title").value("1234567890"))
+                .andExpect(jsonPath("$.content").value("newContent"))
+
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 여러개 조회")
+    void test5() throws Exception {
+        // given
+        List<Post> requestPosts = IntStream.range(1, 31)
+                .mapToObj(i-> {
+                    return Post.builder()
+                            .title("blog title " + i)
+                            .content("blog content " + i)
+                            .build();
+                })
+                .toList();
+        postRepository.saveAll(requestPosts);
+
+        // expected
+        mockMvc.perform(get("/posts?page=1&sort=id,desc")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(5)))
+                .andExpect(jsonPath("$[0].id", is(30)))
+                .andExpect(jsonPath("$[0].title", is("blog title 30")))
+                .andExpect(jsonPath("$[0].content", is("blog content 30")))
+                .andDo(print());
+    }
 }
