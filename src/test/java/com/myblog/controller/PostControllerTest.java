@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myblog.domain.Post;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
+import com.myblog.request.PostEdit;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -21,8 +22,7 @@ import java.util.stream.IntStream;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,6 +39,8 @@ class PostControllerTest {
 
     @PersistenceContext
     private EntityManager em;
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
     @BeforeEach
@@ -132,7 +134,7 @@ class PostControllerTest {
         postRepository.save(post);
 
         // expected
-        mockMvc.perform(get("/post/{postId}",post.getId())
+        mockMvc.perform(get("/posts/{postId}",post.getId())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(post.getId()))
@@ -187,6 +189,29 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.length()", is(10)))
                 .andExpect(jsonPath("$[0].title", is("blog title 19")))
                 .andExpect(jsonPath("$[0].content", is("blog content 19")))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("글 제목수정")
+    void test7() throws Exception {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("newTitle")
+                .content("blog content")
+                .build();
+
+        // expected
+        mockMvc.perform(patch("/posts/{postId}", post.getId())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(status().isOk())
                 .andDo(print());
     }
 }

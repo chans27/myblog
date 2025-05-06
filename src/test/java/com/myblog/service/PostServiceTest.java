@@ -3,6 +3,7 @@ package com.myblog.service;
 import com.myblog.domain.Post;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
+import com.myblog.request.PostEdit;
 import com.myblog.request.PostSearch;
 import com.myblog.response.PostResponse;
 import org.junit.jupiter.api.Assertions;
@@ -98,5 +99,56 @@ class PostServiceTest {
         // then
         assertEquals(10L, posts.size());
         assertEquals("blog title 19", posts.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("글 제목 수정")
+    void test4() {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("newTitle")
+                .content("blog content")
+                .build();
+
+        // when
+        postService.edit(post.getId(), postEdit);
+
+        // then
+        Post changedPost = postRepository.findById(post.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + post.getId()));
+        assertEquals("newTitle", changedPost.getTitle());
+        assertEquals("blog content", changedPost.getContent());
+    }
+
+    @Test
+    @DisplayName("글 내용 수정")
+    void test5() {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("blog title")
+                .content("newContent")
+                .build();
+
+        // when
+        postService.edit(post.getId(), postEdit);
+
+        // then
+        Post changedPost = postRepository.findById(post.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + post.getId()));
+        assertEquals("newContent", changedPost.getContent());
     }
 }
