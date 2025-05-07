@@ -139,7 +139,7 @@ class PostServiceTest {
 
 
         PostEdit postEdit = PostEdit.builder()
-                .title("blog title")
+                .title(null)
                 .content("newContent")
                 .build();
 
@@ -149,6 +149,24 @@ class PostServiceTest {
         // then
         Post changedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + post.getId()));
+        assertEquals("blog title", changedPost.getTitle());
         assertEquals("newContent", changedPost.getContent());
+    }
+
+    @Test
+    @DisplayName("게시글 삭제")
+    void test6() {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+        // when
+        postService.delete(post.getId());
+
+        // then
+        assertEquals(0, postRepository.count());
     }
 }
