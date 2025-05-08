@@ -34,13 +34,13 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 작성")
+    @DisplayName("投稿する")
     void test1() {
         // given
 
         PostCreate postCreate = PostCreate.builder()
-                .title("제목입니다.")
-                .content("내용입니다.")
+                .title("タイトルです。")
+                .content("内容です。")
                 .build();
 
         // when
@@ -49,12 +49,12 @@ class PostServiceTest {
         // then
         Assertions.assertEquals(1L, postRepository.count());
         Post post = postRepository.findAll().get(0);
-        assertEquals("제목입니다.", post.getTitle());
-        assertEquals("내용입니다.", post.getContent());
+        assertEquals("タイトルです。", post.getTitle());
+        assertEquals("内容です。", post.getContent());
     }
 
     @Test
-    @DisplayName("글 1개 조회")
+    @DisplayName("投稿を1件取得する")
     void test2() {
         // given
         Post requestPost = Post.builder()
@@ -75,7 +75,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 1page 조회")
+    @DisplayName("投稿の1ページ目を取得")
     void test3() {
         // given
         List<Post> requestPosts = IntStream.range(1, 20)
@@ -102,7 +102,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 제목 수정")
+    @DisplayName("投稿のタイトルを編集")
     void test4() {
         // given
         Post post = Post.builder()
@@ -122,13 +122,13 @@ class PostServiceTest {
 
         // then
         Post changedPost = postRepository.findById(post.getId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + post.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。 id=" + post.getId()));
         assertEquals("newTitle", changedPost.getTitle());
         assertEquals("blog content", changedPost.getContent());
     }
 
     @Test
-    @DisplayName("글 내용 수정")
+    @DisplayName("投稿の内容を編集")
     void test5() {
         // given
         Post post = Post.builder()
@@ -148,13 +148,13 @@ class PostServiceTest {
 
         // then
         Post changedPost = postRepository.findById(post.getId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다. id=" + post.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。 id=" + post.getId()));
         assertEquals("blog title", changedPost.getTitle());
         assertEquals("newContent", changedPost.getContent());
     }
 
     @Test
-    @DisplayName("게시글 삭제")
+    @DisplayName("投稿を削除")
     void test6() {
         // given
         Post post = Post.builder()

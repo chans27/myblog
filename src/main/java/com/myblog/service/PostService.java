@@ -33,7 +33,7 @@ public class PostService {
 
     public PostResponse getOnePost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -53,7 +53,7 @@ public class PostService {
     @Transactional
     public void edit(Long postId, PostEdit postEdit) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
 
         PostEditor.PostEditorBuilder editorBuilder = post.toEditor();
         PostEditor postEditor = editorBuilder.title(postEdit.getTitle())
@@ -65,7 +65,7 @@ public class PostService {
 
     public void delete(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
 
         postRepository.delete(post);
     }

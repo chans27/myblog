@@ -50,12 +50,12 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("/posts 요청시 Hello World 출력")
+    @DisplayName("/posts リクエストに製造")
     void test() throws Exception {
         // given
         PostCreate request = PostCreate.builder()
-                .title("제목입니다.")
-                .content("내용입니다.")
+                .title("タイトルです。")
+                .content("内容です。")
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -72,11 +72,11 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("/posts 요청시 title값은 필수")
+    @DisplayName("/posts リクエストする時にタイトルは必須")
     void test2() throws Exception {
         // given
         PostCreate request = PostCreate.builder()
-                .content("내용입니다.")
+                .content("内容です。")
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -89,18 +89,18 @@ class PostControllerTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400")) // json data validation
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
+                .andExpect(jsonPath("$.message").value("不正なリクエストです。"))
+                .andExpect(jsonPath("$.validation.title").value("タイトルを入力してください。"))
                 .andDo(print());
     }
 
     @Test
-    @DisplayName("/posts 요청시 DB에 값이 저장된다.")
+    @DisplayName("/postsリクエストするとDBに保存される")
     void test3() throws Exception {
         // given
         PostCreate request = PostCreate.builder()
-                .title("제목입니다.")
-                .content("내용입니다.")
+                .title("タイトルです。")
+                .content("内容です。")
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -118,12 +118,12 @@ class PostControllerTest {
         assertEquals(1L, postRepository.count());
 
         Post post = postRepository.findAll().get(0);
-        assertEquals("제목입니다.", post.getTitle());
-        assertEquals("내용입니다.", post.getContent());
+        assertEquals("タイトルです。", post.getTitle());
+        assertEquals("内容です。", post.getContent());
     }
 
     @Test
-    @DisplayName("글 1개 조회")
+    @DisplayName("投稿を1件取得する")
     void test4() throws Exception {
         // given
         Post post = Post.builder()
@@ -145,7 +145,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 여러개 조회")
+    @DisplayName("投稿を複数件取得する")
     void test5() throws Exception {
         // given
         List<Post> requestPosts = IntStream.range(0, 20)
@@ -169,7 +169,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("페이지를 0으로 요청하면 첫 페이지르 가져온다.")
+    @DisplayName("ページを0でリクエストすると、最初のページが取得される。")
     void test6() throws Exception {
         // given
         List<Post> requestPosts = IntStream.range(0, 20)
@@ -193,7 +193,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 제목수정")
+    @DisplayName("投稿のタイトルを編集")
     void test7() throws Exception {
         // given
         Post post = Post.builder()
@@ -216,7 +216,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("게시글 삭제")
+    @DisplayName("投稿を削除")
     void test8() throws Exception {
         // given
         Post post = Post.builder()
