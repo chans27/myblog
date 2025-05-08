@@ -11,7 +11,7 @@ import java.util.Map;
  *     "code : "400",
  *     "message": "Bad Request",
  *     "validation": {
- *         "title" : 값을 입력해주세요
+ *         "title" : タイトルを入力してください。
  *     }
  * }
  */

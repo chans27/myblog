@@ -20,7 +20,7 @@ public class ExceptionController {
     public ErrorResponse invalidRequestHandler(MethodArgumentNotValidException e) {
         ErrorResponse response = ErrorResponse.builder()
                 .code("400")
-                .message("잘못된 요청입니다.")
+                .message("不正なリクエストです。")
                 .build();
 
         for (FieldError fieldError : e.getFieldErrors()) {
