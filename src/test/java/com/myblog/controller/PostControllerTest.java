@@ -50,7 +50,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("/posts リクエストに製造")
+    @DisplayName("/posts リクエストに成功")
     void test() throws Exception {
         // given
         PostCreate request = PostCreate.builder()
@@ -85,8 +85,7 @@ class PostControllerTest {
         // expected
         mockMvc.perform(post("/posts")
                         .contentType(APPLICATION_JSON)
-                        .content(json)
-                )
+                        .content(json))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400")) // json data validation
                 .andExpect(jsonPath("$.message").value("不正なリクエストです。"))
@@ -229,6 +228,54 @@ class PostControllerTest {
         mockMvc.perform(delete("/posts/{postId}", post.getId())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("存在しない投稿の取得")
+    void test9() throws Exception {
+        // expected
+        mockMvc.perform(delete("/posts/{postId}", 1L)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("存在しない投稿の編集")
+    void test10() throws Exception {
+        PostEdit postEdit = PostEdit.builder()
+                .title("newTitle")
+                .content("blog content")
+                .build();
+
+        // expected
+        mockMvc.perform(patch("/posts/{postId}", 1L)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("タイトルに’NG’を含めることはできない")
+    void test11() throws Exception {
+        // given
+        PostCreate request = PostCreate.builder()
+                .title("NG")
+                .content("内容です。")
+                .build();
+
+        String json = objectMapper.writeValueAsString(request);// Object -> Json;
+
+        // expected
+        mockMvc.perform(post("/posts")
+                        .contentType(APPLICATION_JSON)
+                        .content(json)
+                )
+                .andExpect(status().isBadRequest())
                 .andDo(print());
     }
 }
