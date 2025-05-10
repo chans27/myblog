@@ -2,6 +2,7 @@ package com.myblog.service;
 
 import com.myblog.domain.Post;
 import com.myblog.domain.PostEditor;
+import com.myblog.exception.PostNotFound;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
 import com.myblog.request.PostEdit;
@@ -33,7 +34,7 @@ public class PostService {
 
     public PostResponse getOnePost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
+                .orElseThrow(PostNotFound::new);
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -53,7 +54,7 @@ public class PostService {
     @Transactional
     public void edit(Long postId, PostEdit postEdit) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
+                .orElseThrow(PostNotFound::new);
 
         PostEditor.PostEditorBuilder editorBuilder = post.toEditor();
         PostEditor postEditor = editorBuilder.title(postEdit.getTitle())
@@ -65,7 +66,7 @@ public class PostService {
 
     public void delete(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("該当する投稿が存在しません。"));
+                .orElseThrow(PostNotFound::new);
 
         postRepository.delete(post);
     }
