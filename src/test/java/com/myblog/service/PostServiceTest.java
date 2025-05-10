@@ -1,6 +1,7 @@
 package com.myblog.service;
 
 import com.myblog.domain.Post;
+import com.myblog.exception.PostNotFound;
 import com.myblog.repository.PostRepository;
 import com.myblog.request.PostCreate;
 import com.myblog.request.PostEdit;
@@ -16,8 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class PostServiceTest {
@@ -168,5 +168,60 @@ class PostServiceTest {
 
         // then
         assertEquals(0, postRepository.count());
+    }
+
+    @Test
+    @DisplayName("投稿を1件取得 - 該当する投稿なし")
+    void test7() {
+        // given
+        Post post = Post.builder()
+                .title("newTitle")
+                .content("newContent")
+                .build();
+        postRepository.save(post);
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.getOnePost(post.getId() + 1L);
+        });
+    }
+
+    @Test
+    @DisplayName("投稿を削除 - 該当する投稿なし")
+    void test8() {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.delete(post.getId() + 1L);
+        });
+    }
+
+    @Test
+    @DisplayName("投稿の内容を編集 - 該当する投稿なし")
+    void test9() {
+        // given
+        Post post = Post.builder()
+                .title("blog title")
+                .content("blog content")
+                .build();
+        postRepository.save(post);
+
+
+        PostEdit postEdit = PostEdit.builder()
+                .title(null)
+                .content("newContent")
+                .build();
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.edit(post.getId() + 1L, postEdit);
+        });
+
     }
 }
